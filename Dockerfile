@@ -53,13 +53,12 @@ RUN make assets
 COPY --from=node /build/dist /build/dist
 
 # build
-ARG TARGETOS
-ARG TARGETARCH
-ARG TARGETVARIANT
-ARG GOARM=""
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
+ARG TARGETVARIANT=""
+ARG GOARM=${TARGETVARIANT#v}
 
-RUN RELEASE=latest GOOS=linux GOARCH=amd64 GOARM="" make build
-
+RUN RELEASE=${RELEASE} GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${GOARM} make build
 
 # STEP 3 build a small image including module support
 FROM alpine:3.22
