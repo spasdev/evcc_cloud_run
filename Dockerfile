@@ -1,14 +1,12 @@
 ################## added section for tailscale
 FROM golang:1.16.2-alpine3.13 as builder
 WORKDIR /app
-COPY . ./
-# This is where one could build the application code as well.
 
 FROM alpine:latest
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 # Copy binary to production image.
-COPY --from=builder /start.sh /start.sh
+COPY --from=builder start.sh start.sh
 
 # Copy Tailscale binaries from the tailscale image on Docker Hub.
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
