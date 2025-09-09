@@ -1,5 +1,5 @@
 # STEP 1 build ui
-FROM --platform=$_BUILDPLATFORM node:22-alpine AS node
+FROM --platform=linux/arm64 node:22-alpine AS node
 
 RUN apk update && apk add --no-cache make
 
@@ -20,7 +20,7 @@ RUN make ui
 
 
 # STEP 2 build executable binary
-FROM --platform=$_BUILDPLATFORM golang:1.25-alpine AS builder
+FROM --platform=linux/arm64 golang:1.25-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
@@ -56,9 +56,9 @@ COPY --from=node /build/dist /build/dist
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
-ARG GOARM=${TARGETVARIANT#v}
+ARG GOARM=""
 
-RUN RELEASE=${RELEASE} GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${GOARM} make build
+RUN RELEASE=latest GOOS=linux GOARCH=amd64 GOARM="" make build
 
 
 # STEP 3 build a small image including module support
