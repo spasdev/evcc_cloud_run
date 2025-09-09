@@ -1,5 +1,5 @@
 # STEP 1 build ui
-FROM --platform=linux/amd64 node:22-alpine AS node
+FROM --platform=$BUILDPLATFORM node:22-alpine AS node
 
 RUN apk update && apk add --no-cache make
 
@@ -20,7 +20,7 @@ RUN make ui
 
 
 # STEP 2 build executable binary
-FROM --platform=linux/amd64 golang:1.25-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
