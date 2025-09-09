@@ -64,6 +64,17 @@ ARG GOARM=""
 
 RUN RELEASE=${RELEASE} GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${GOARM} make build
 
+# --- ADD THESE TEMPORARY DEBUGGING LINES IMMEDIATELY AFTER make build ---
+RUN echo "--- Debugging: Listing contents of /build after make build ---"
+RUN ls -lha /build
+RUN echo "--- Debugging: Checking for 'evcc' file ---"
+RUN find /build -name "evcc" || echo "evcc not found by find command"
+RUN echo "--- Debugging: Checking for files with common Go binary names (e.g., 'main') ---"
+RUN find /build -type f -exec file {} + | grep -i "executable" || true # List executables
+RUN echo "--- End Debugging ---"
+# -----------------------------------------------------------------------
+
+
 # STEP 3 build a small image including module support
 FROM alpine:3.22
 
