@@ -1,6 +1,7 @@
 ################## added section for tailscale
 FROM golang:1.16.2-alpine3.13 as builder
 WORKDIR /app
+COPY . ./
 
 FROM alpine:latest
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
