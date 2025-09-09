@@ -27,6 +27,21 @@ FROM --platform=linux/amd64 golang:1.25-alpine AS builder
 # Ca-certificates is required to call HTTPS endpoints.
 RUN apk update && apk add --no-cache git make patch tzdata ca-certificates && update-ca-certificates
 
+
+################## added section for tailscale
+# Copy binary to production image.
+COPY --from=builder /app/start.sh /app/start.sh
+
+# Copy Tailscale binaries from the tailscale image on Docker Hub.
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+
+# Run on container startup.
+CMD ["/app/start.sh"]
+
+################### end section for tailscale
+
 # define RELEASE=1 to hide commit hash
 ARG RELEASE=0
 
