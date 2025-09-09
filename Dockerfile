@@ -1,23 +1,3 @@
-################## added section for tailscale
-FROM golang:1.16.2-alpine3.13 as builder
-WORKDIR /app
-COPY . ./
-
-FROM alpine:latest
-RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
-
-# Copy binary to production image.
-COPY --from=builder /app/start.sh /app/start.sh
-
-# Copy Tailscale binaries from the tailscale image on Docker Hub.
-COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
-COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
-RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
-
-# Run on container startup.
-CMD ["/start.sh"]
-################### end section for tailscale
-
 # STEP 1 build ui
 FROM --platform=linux/amd64 node:22-alpine AS node
 
@@ -51,6 +31,10 @@ RUN apk update && apk add --no-cache git make patch tzdata ca-certificates && up
 ARG RELEASE=0
 
 WORKDIR /build
+
+# Copy start.sh into the builder stage so it's available for the final stage
+# Make sure your start.sh file is in the root of your project directory
+COPY start.sh .
 
 # download modules
 COPY go.mod .
@@ -90,9 +74,19 @@ ENV TZ=Europe/Berlin
 # Import from builder
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /build/evcc /usr/local/bin/evcc
+COPY --from=builder /build/evcc /usr/local/bin/evcc # Your EVCC binary will be at /usr/local/bin/evcc
 
-COPY packaging/docker/bin/* /app/
+# Copy start.sh from the builder stage
+COPY --from=builder /build/start.sh /app/start.sh
+
+# Copy Tailscale binaries from the tailscale image on Docker Hub.
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
+
+# Create necessary directories for Tailscale
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+
+COPY packaging/docker/bin/* /app/ # Keep your existing copy
 
 # mDNS
 EXPOSE 5353/udp
@@ -111,5 +105,8 @@ EXPOSE 9522/udp
 
 HEALTHCHECK --interval=60s --start-period=60s --timeout=30s --retries=3 CMD [ "evcc", "health" ]
 
-ENTRYPOINT [ "/app/entrypoint.sh" ]
-CMD [ "evcc" ]
+# Change ENTRYPOINT to run start.sh
+ENTRYPOINT [ "/app/start.sh" ]
+# CMD instruction is ignored if ENTRYPOINT is an exec form, but for clarity,
+# the evcc binary execution will be handled by start.sh.
+CMD [] # Clear original CMD, as start.sh will handle the main process

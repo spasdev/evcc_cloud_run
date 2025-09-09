@@ -18,3 +18,4 @@ release
 !evcc.dist.yaml
 !package*.json
 !vue.config.js
+!start.sh
