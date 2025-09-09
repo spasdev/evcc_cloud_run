@@ -71,7 +71,7 @@ porcelain::
 
 build::
 	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)
-	CGO_ENABLED=0 go build -o evcc -v $(BUILD_TAGS) $(BUILD_ARGS) ./cmd/evcc
+	CGO_ENABLED=0 go build -o evcc -v $(BUILD_TAGS) $(BUILD_ARGS) . # <--- ADDED -o evcc AND '.'
 
 snapshot::
 	goreleaser --snapshot --skip publish --clean
