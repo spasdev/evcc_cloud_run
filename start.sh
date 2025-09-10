@@ -5,8 +5,20 @@ set -e
 # and create a SOCKS5 proxy.
 /app/tailscaled --tun=userspace-networking --socks5-server=localhost:1055 &
 
-# Add a short delay to allow the tailscaled daemon to initialize
-sleep 2
+# --- Wait for Tailscale to start ---
+# This loop waits for the daemon to be ready before continuing.
+counter=0
+until /app/tailscale status > /dev/null 2>&1; do
+    counter=$((counter+1))
+    if [ $counter -ge 10 ]; then
+        echo "tailscaled failed to start after 10 seconds."
+        exit 1
+    fi
+    echo "Waiting for tailscaled to start... (attempt $counter)"
+    sleep 1
+done
+echo "tailscaled daemon is running."
+# ------------------------------------
 
 # Bring the Tailscale interface up using an auth key from the TAILSCALE_AUTHKEY
 # environment variable. You can customize the hostname.
