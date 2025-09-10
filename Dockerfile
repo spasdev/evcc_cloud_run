@@ -85,7 +85,7 @@ COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/t
 
 # Create directories for Tailscale and a valid, empty JSON log config file.
 RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale && \
-    echo "{}" > /var/lib/tailscale/tailscaled.log.conf
+    echo '{"Collection": "tailnode.log.tailscale.io"}' > /var/lib/tailscale/tailscaled.log.conf
 
 # Copy the start script that brings up Tailscale and then the application.
 # Ensure this file exists in your build context.
