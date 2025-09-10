@@ -65,6 +65,9 @@ FROM alpine:3.22
 
 WORKDIR /app
 
+# Add a basic /etc/hosts file to ensure "localhost" can be resolved
+RUN echo "127.0.0.1       localhost" > /etc/hosts
+
 ENV TZ=Europe/Berlin
 
 # Import from builder
