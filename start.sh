@@ -3,7 +3,7 @@ set -e
 
 # Start the Tailscale daemon in the background in userspace networking mode
 # and create a SOCKS5 proxy.
-/app/tailscaled --tun=userspace-networking --socks5-server=localhost:1055 --state=mem: &
+/app/tailscaled --tun=userspace-networking --socks5-server=localhost:1055 --state=mem: --no-logs-no-support &
 
 echo "start the tailscale checks"
 
