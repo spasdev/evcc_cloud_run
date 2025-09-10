@@ -74,6 +74,20 @@ COPY --from=builder /build/evcc /usr/local/bin/evcc
 
 COPY packaging/docker/bin/* /app/
 
+# --- TAILSCALE INSTALLATION START ---
+# Copy Tailscale binaries from the official stable image on Docker Hub.
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
+
+# Create directories required by Tailscale to store its state.
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+
+# Copy the start script that brings up Tailscale and then the application.
+# Ensure this file exists in your build context.
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+# --- TAILSCALE INSTALLATION END ---
+
 # mDNS
 EXPOSE 5353/udp
 # EEBus
@@ -91,5 +105,5 @@ EXPOSE 9522/udp
 
 HEALTHCHECK --interval=60s --start-period=60s --timeout=30s --retries=3 CMD [ "evcc", "health" ]
 
-ENTRYPOINT [ "/app/entrypoint.sh" ]
-CMD [ "evcc" ]
+# The original ENTRYPOINT and CMD are replaced to use the new start.sh script.
+CMD [ "/app/start.sh" ]
