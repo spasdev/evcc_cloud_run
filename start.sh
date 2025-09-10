@@ -13,4 +13,4 @@ echo "Tailscale started successfully."
 
 # Run the original application entrypoint, wrapping it with the SOCKS5 proxy.
 # This ensures the application's traffic goes through the Tailscale network.
-exec env ALL_PROXY=socks5://localhost:1055/ /app/entrypoint.sh evcc
+exec env ALL_PROXY=socks5://localhost:1055/ /app/entrypoint.sh evcc --host 0.0.0.0 --port ${PORT}
