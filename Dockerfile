@@ -32,10 +32,6 @@ ARG RELEASE=0
 
 WORKDIR /build
 
-# Copy start.sh into the builder stage so it's available for the final stage
-# Make sure your start.sh file is in the root of your project directory
-COPY start.sh .
-
 # download modules
 COPY go.mod .
 COPY go.sum .
@@ -64,17 +60,6 @@ ARG GOARM=""
 
 RUN RELEASE=${RELEASE} GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${GOARM} make build
 
-# --- ADD THESE TEMPORARY DEBUGGING LINES IMMEDIATELY AFTER make build ---
-RUN echo "--- Debugging: Listing contents of /build after make build ---"
-RUN ls -lha /build
-RUN echo "--- Debugging: Checking for 'evcc' file ---"
-RUN find /build -name "evcc" || echo "evcc not found by find command"
-RUN echo "--- Debugging: Checking for files with common Go binary names (e.g., 'main') ---"
-RUN find /build -type f -exec file {} + | grep -i "executable" || true # List executables
-RUN echo "--- End Debugging ---"
-# -----------------------------------------------------------------------
-
-
 # STEP 3 build a small image including module support
 FROM alpine:3.22
 
@@ -85,20 +70,9 @@ ENV TZ=Europe/Berlin
 # Import from builder
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-RUN /bin/true # This command does nothing, but creates a new layer, which might bust cache
-COPY --from=builder /build/evcc /usr/local/bin/evcc # Your EVCC binary will be at /usr/local/bin/evcc
+COPY --from=builder /build/evcc /usr/local/bin/evcc
 
-# Copy start.sh from the builder stage
-COPY --from=builder /build/start.sh /app/start.sh
-
-# Copy Tailscale binaries from the tailscale image on Docker Hub.
-COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
-COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
-
-# Create necessary directories for Tailscale
-RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
-
-COPY packaging/docker/bin/* /app/ # Keep your existing copy
+COPY packaging/docker/bin/* /app/
 
 # mDNS
 EXPOSE 5353/udp
@@ -117,8 +91,5 @@ EXPOSE 9522/udp
 
 HEALTHCHECK --interval=60s --start-period=60s --timeout=30s --retries=3 CMD [ "evcc", "health" ]
 
-# Change ENTRYPOINT to run start.sh
-ENTRYPOINT [ "/app/start.sh" ]
-# CMD instruction is ignored if ENTRYPOINT is an exec form, but for clarity,
-# the evcc binary execution will be handled by start.sh.
-CMD [] # Clear original CMD, as start.sh will handle the main process
+ENTRYPOINT [ "/app/entrypoint.sh" ]
+CMD [ "evcc" ]
