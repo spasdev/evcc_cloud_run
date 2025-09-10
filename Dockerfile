@@ -79,8 +79,9 @@ COPY packaging/docker/bin/* /app/
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
 
-# Create directories required by Tailscale to store its state.
-RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+# Create directories required by Tailscale to store its state. and the empty log config file to prevent a crash.
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale && \
+    touch /var/lib/tailscale/tailscaled.log.conf
 
 # Copy the start script that brings up Tailscale and then the application.
 # Ensure this file exists in your build context.

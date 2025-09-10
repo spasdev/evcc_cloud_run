@@ -5,6 +5,8 @@ set -e
 # and create a SOCKS5 proxy.
 /app/tailscaled --tun=userspace-networking --socks5-server=localhost:1055 &
 
+echo "start the tailscale checks"
+
 # --- Wait for Tailscale to start ---
 # This loop waits for the daemon to be ready before continuing.
 counter=0
