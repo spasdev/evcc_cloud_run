@@ -85,6 +85,7 @@ ENV TZ=Europe/Berlin
 # Import from builder
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+RUN /bin/true # This command does nothing, but creates a new layer, which might bust cache
 COPY --from=builder /build/evcc /usr/local/bin/evcc # Your EVCC binary will be at /usr/local/bin/evcc
 
 # Copy start.sh from the builder stage
