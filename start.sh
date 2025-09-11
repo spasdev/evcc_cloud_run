@@ -15,6 +15,4 @@ echo "Tailscale started successfully."
 
 # Run the evcc application using the correct config path and proxy settings.
 exec env ALL_PROXY=socks5://127.0.0.1:1055/ \
-     EVCC_HOST="0.0.0.0" \
-     EVCC_PORT="${PORT}" \
      /app/entrypoint.sh evcc --config /etc/evcc.yaml
