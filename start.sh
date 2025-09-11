@@ -2,7 +2,7 @@
 set -e
 
 # CHANGE 1: Use the IP address 127.0.0.1 instead of "localhost"
-/app/tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 --state=mem: &
+/app/tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 --state=mem: -verbose 2 & 
 
 echo "start the tailscale checks"
 
