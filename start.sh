@@ -28,6 +28,11 @@ sleep 2
 
 echo "Tailscale started successfully."
 
+# Wait until the connection is fully established
+until /app/tailscale status | grep -q "Running"; do
+    echo "Waiting for Tailscale to start..."
+    sleep 2
+done
 
 echo "--- Running Network Diagnostics after tailscale started ---"
 
