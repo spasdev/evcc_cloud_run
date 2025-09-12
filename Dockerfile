@@ -66,8 +66,8 @@ FROM alpine:3.22
 WORKDIR /app
 
 # Add a complete /etc/hosts file for both IPv4 and IPv6 localhost resolution.
-RUN echo "127.0.0.1       localhost" > /etc/hosts && \
-    echo "::1             localhost" >> /etc/hosts
+#RUN echo "127.0.0.1       localhost" > /etc/hosts && \
+#    echo "::1             localhost" >> /etc/hosts
 
 ENV TZ=Europe/Berlin
 
