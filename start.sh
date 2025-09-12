@@ -1,22 +1,9 @@
 #!/bin/sh
 set -e
 
-echo "--- Running Network Diagnostics before tailscale started ---"
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
-echo "DNS Configuration before tailscale started:"
-cat /etc/resolv.conf
-echo
-
-echo "Pinging Google's DNS Server before tailscale started:"
-ping -c 4 8.8.8.8
-echo
-
-echo "Resolving api.zaptec.com before tailscale started:"
-nslookup api.zaptec.com
-echo
-
-
-# Start the Tailscale daemon in ephemeral mode, using a direct IP for the proxy.
+# Start the Tailscale using a direct IP for the proxy.
 /app/tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 &
 
 # Give the daemon a moment to start before checking its status.
