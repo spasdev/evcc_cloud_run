@@ -9,7 +9,7 @@ sleep 2
 
 # --- Bring Tailscale Up ---
 # Use --accept-dns=false as a best practice in server environments.
-/app/tailscale up --auth-key=${TAILSCALE_AUTHKEY} --hostname=evcc-container --accept-dns=false
+/app/tailscale up --auth-key=${TAILSCALE_AUTHKEY} --hostname=evcc-container
 
 echo "Tailscale started successfully."
 
