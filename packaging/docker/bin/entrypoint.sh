@@ -44,12 +44,22 @@ if [ -f ${HASSIO_OPTIONSFILE} ]; then
 		fi
 	fi
 else
-	if [ "$1" = 'evcc' ]; then
-		shift
-		exec evcc "$@"
-	elif expr "$1" : '-.*' > /dev/null; then
-		exec evcc "$@"
-	else
-		exec "$@"
-	fi
+  # --- This is the execution path for Cloud Run ---
+
+  # 1. Preserve the original logic: if the first argument is "evcc", remove it.
+  if [ "$1" = 'evcc' ]; then
+    shift
+  fi
+
+  # 2. Prepare the final command using the remaining arguments
+  CMD="evcc $@"
+
+  # 3. If ALL_PROXY is set, explicitly prepend it
+  if [ -n "$ALL_PROXY" ]; then
+    echo "Tailscale proxy is set. Applying to evcc command."
+    CMD="env ALL_PROXY=$ALL_PROXY $CMD"
+  fi
+
+  # 4. Execute the final, correctly constructed command
+  exec sh -c "$CMD"
 fi
