@@ -1,13 +1,11 @@
 #!/bin/sh
 set -e
 
-echo "nameserver 8.8.8.8" > /etc/resolv.conf
-
 # Start the Tailscale using a direct IP for the proxy.
 /app/tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 &
 
 # Give the daemon a moment to start before checking its status.
-sleep 2
+sleep 5
 
 # --- Bring Tailscale Up ---
 # Use --accept-dns=false as a best practice in server environments.
@@ -24,17 +22,8 @@ echo "Tailscale started successfully."
 #    sleep 2
 #done
 
-echo "✅ Tailscale is connected."
-echo "Final DNS configuration:"
-
-echo "--- Running Network Diagnostics after tailscale started ---"
-
 echo "DNS Configuration after tailscale started:"
 cat /etc/resolv.conf
-echo
-
-echo "Pinging Google's DNS Server after tailscale started:"
-ping -c 4 8.8.8.8
 echo
 
 echo "Resolving api.zaptec.com after tailscale started:"
