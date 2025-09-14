@@ -1,39 +1,18 @@
 #!/bin/sh
 set -e
 
-# Start the Tailscale using a direct IP for the proxy.
+# Export the proxy variable so all subsequent commands inherit it.
+export ALL_PROXY=socks5://127.0.0.1:1055/
+
+# Start the Tailscale daemon in the background
 /app/tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 &
+sleep 3
 
-# Give the daemon a moment to start before checking its status.
-sleep 5
+# Bring Tailscale up
+/app/tailscale up --authkey=${TAILSCALE_AUTHKEY} --hostname=evcc-container --accept-dns=true --accept-routes=true
 
-# --- Bring Tailscale Up ---
-# Use --accept-dns=false as a best practice in server environments.
-/app/tailscale up --auth-key=${TAILSCALE_AUTHKEY} --hostname=evcc-container --accept-dns=true --accept-routes=true
+echo "✅ Tailscale is connected and running."
 
-echo "Tailscale started successfully."
-
-# Wait until the BackendState is "Running".
-# We use `jq` with the `-e` flag, which sets the exit code to 0 if the expression is true.
-#until /app/tailscale status --json | jq -e '.BackendState == "Running"' > /dev/null 2>&1; do
-#    echo "Waiting for Tailscale to connect... Current status:"
-#    # Log the full JSON status for debugging if the loop continues
-#    /app/tailscale status --json | jq .
-#    sleep 2
-#done
-
-echo "DNS Configuration after tailscale started:"
-cat /etc/resolv.conf
-echo
-
-echo "Resolving api.zaptec.com after tailscale started:"
-nslookup api.zaptec.com
-echo
-
-echo "Resolving routes after tailscale started:"
-nslookup 192.168.1.66
-echo
-
-# Run the evcc application using the correct config path and proxy settings.
-exec env ALL_PROXY=socks5://127.0.0.1:1055/ \
-     /app/entrypoint.sh evcc --config /etc/evcc.yaml
+# Now that Tailscale is running, its proxy is active.
+# The ALL_PROXY variable is already exported, so we can just execute the command.
+exec /app/entrypoint.sh evcc --config /etc/evcc.yaml
