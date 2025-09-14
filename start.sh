@@ -15,11 +15,17 @@ sleep 2
 
 echo "Tailscale started successfully."
 
-# Wait until the connection is fully established
-until /app/tailscale status | grep -q "Running"; do
-    echo "Waiting for Tailscale to start..."
+# Wait until the BackendState is "Running".
+# We use `jq` with the `-e` flag, which sets the exit code to 0 if the expression is true.
+until /app/tailscale status --json | jq -e '.BackendState == "Running"' > /dev/null 2>&1; do
+    echo "Waiting for Tailscale to connect... Current status:"
+    # Log the full JSON status for debugging if the loop continues
+    /app/tailscale status --json | jq .
     sleep 2
 done
+
+echo "✅ Tailscale is connected."
+echo "Final DNS configuration:"
 
 echo "--- Running Network Diagnostics after tailscale started ---"
 
