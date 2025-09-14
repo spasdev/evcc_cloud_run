@@ -30,6 +30,10 @@ echo "Resolving api.zaptec.com after tailscale started:"
 nslookup api.zaptec.com
 echo
 
+echo "Resolving routes after tailscale started:"
+nslookup 192.168.1.66
+echo
+
 # Run the evcc application using the correct config path and proxy settings.
 exec env ALL_PROXY=socks5://127.0.0.1:1055/ \
      /app/entrypoint.sh evcc --config /etc/evcc.yaml
