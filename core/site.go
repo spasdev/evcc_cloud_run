@@ -164,12 +164,22 @@ func (site *Site) Boot(log *util.Logger, loadpoints []*Loadpoint, tariffs *tarif
 		})
 	}
 
-	tariff := site.GetTariff(api.TariffUsagePlanner)
+	//tariff := site.GetTariff(api.TariffUsagePlanner)
 
 	// give loadpoints access to vehicles and database
 	for _, lp := range loadpoints {
 		lp.coordinator = coordinator.NewAdapter(lp, site.coordinator)
-		lp.planner = planner.New(lp.log, tariff)
+		// get effective forecasted tariffs
+		tariffeffective := site.CalculateEffectiveForecastedTariffs(lp)
+		lp.planner = planner.New(lp.log, tariffeffective)
+
+		// TEMPORARY WORKAROUND: here the the site tariffs
+		//   is set to equal to the first lp planner tariff but in reality every loadpoint
+		//  should have its own planner tariff when solar production is taken into account
+		// depending on its power capacity
+		if site.tariffs.Planner == nil {
+			site.tariffs.Planner = tariffeffective
+		}
 
 		if db.Instance != nil {
 			var err error
@@ -1016,11 +1026,13 @@ func (site *Site) prepare() {
 	site.publish(keys.SmartFeedInPriorityAvailable, site.isDynamicTariff(api.TariffUsageFeedIn))
 
 	site.publish(keys.Currency, site.tariffs.Currency)
-	if tariff := site.GetTariff(api.TariffUsagePlanner); tariff != nil {
-		site.publish(keys.SmartCostType, tariff.Type())
-	} else {
-		site.publish(keys.SmartCostType, nil)
-	}
+
+	//TEMPORARY WORKAROUND : disable smartcost until fully clear how this plays with planner
+	//if tariff := site.GetTariff(api.TariffUsagePlanner); tariff != nil {
+	//	site.publish(keys.SmartCostType, tariff.Type())
+	//} else {
+	site.publish(keys.SmartCostType, nil)
+	//}
 
 	site.publishVehicles()
 	site.publishTariffs(0, 0)

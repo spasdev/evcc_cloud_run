@@ -834,7 +834,7 @@
     "targetChargePlan": {
       "chargeDuration": "Durée de charge",
       "co2Label": "Émissions de CO₂ ⌀",
-      "priceLabel": "Prix de l'énergie",
+      "priceLabel": "Prix de l'énergie estimé incl. le solaire",
       "timeRange": "{day} {range} h",
       "unknownPrice": "encore inconnu"
     },
